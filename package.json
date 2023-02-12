@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.12.4",
+    "@material-ui/icons": "^4.11.3",
+    "@reduxjs/toolkit": "^1.9.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -10,11 +13,22 @@
     "@types/node": "^16.18.11",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
+    "axios": "^1.2.5",
+    "formik": "^2.2.9",
+    "material-ui-toast": "^1.1.6",
     "react": "^18.2.0",
+    "react-data-table-component": "^7.5.3",
     "react-dom": "^18.2.0",
+    "react-query": "^3.39.3",
+    "react-redux": "^8.0.5",
+    "react-router-dom": "^6.8.0",
     "react-scripts": "5.0.1",
+    "redux": "^4.2.0",
+    "styled-components": "^5.3.6",
     "typescript": "^4.9.4",
-    "web-vitals": "^2.1.4"
+    "use-query": "^1.0.2",
+    "web-vitals": "^2.1.4",
+    "yup": "^0.32.11"
   },
   "scripts": {
     "start": "react-scripts start",
