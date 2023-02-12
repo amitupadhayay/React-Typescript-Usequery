@@ -18,7 +18,7 @@ function App() {
     checkAuthenticated();
   }, [authenticated]);
 
-  const checkAuthenticated = () => {
+  const checkAuthenticated = () => { 
     //setAuthenticated(CoreService.checkToken());
   }
 
