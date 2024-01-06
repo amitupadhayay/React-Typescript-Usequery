@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import ConfirmComponent from '../../CommonComponent/ConfirmComponent';
 
 
-const EmployeeList = (props: any) => {
+const EmployeeList = (props: any) => { 
 
     const [columns, setColumns] = useState<any[]>([]);
     const [openEmployeePopup, setOpenEmployeePopup] = useState(false);
