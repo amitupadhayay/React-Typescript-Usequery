@@ -13,28 +13,13 @@ import { Save } from '@material-ui/icons';
 import { useMutation } from 'react-query';
 import { loginApi } from '../../Services/CoreService';
 import { useNavigate } from "react-router-dom"
+import { useLoginMutation } from '../../Hooks/LoginHooks';
 
 
 const Login = (props: any) => {
 
     const navigate = useNavigate();
-
-    const { mutate: loginMutate, isLoading, isError, error } = useMutation(loginApi, {
-        onSuccess: (resp: any) => {
-            if (resp?.UserName) {
-                localStorage.setItem('token', resp?.Token);
-                //toast.success('Login done successfully');
-                navigate('/employee')
-            }
-            else {
-                //toast.error('Username or Password is not correct!');
-            }
-        },
-        onError: (error) => {
-            // toast.error(`something wrong`);
-        }
-    })
-    const dispatch = useDispatch();
+    const loginMutation = useLoginMutation();
 
     useEffect(() => {
         localStorage.clear();
@@ -43,9 +28,26 @@ const Login = (props: any) => {
     const setInitialValue = () => {
         return {
             UserName: null,
-            Password: null,           
+            Password: null,
         }
     };
+
+    // const { mutate: loginMutate, isLoading, isError, error } = useMutation(loginApi, {
+    //     onSuccess: (resp: any) => {
+    //         if (resp?.UserName) {
+    //             localStorage.setItem('token', resp?.Token);
+    //             //toast.success('Login done successfully');
+    //             navigate('/employee')
+    //         }
+    //         else {
+    //             //toast.error('Username or Password is not correct!');
+    //         }
+    //     },
+    //     onError: (error) => {
+    //         // toast.error(`something wrong`);
+    //     }
+    // })
+    // const dispatch = useDispatch();
 
     const validationSchema = yup.object({
         UserName: yup.string().required("User Name is required"),
@@ -67,11 +69,12 @@ const Login = (props: any) => {
     const handleLogin = () => {
         if (formik.isValid) {
             let formData = {
-                UserName: formik.values.UserName,
-                Password: formik.values.Password,
-                Token:"",
+                UserName: formik.values?.UserName,
+                Password: formik.values?.Password,
+                Token: "",
             };
-            loginMutate(formData);
+            //loginMutate(formData);
+            loginMutation.mutate(formData);
         }
     }
 

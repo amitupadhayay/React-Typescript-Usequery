@@ -11,22 +11,29 @@ import EmployeeForm from './EmployeeForm';
 import DialogComponent from '../../CommonComponent/DialogComponent';
 import { useNavigate } from 'react-router-dom';
 import ConfirmComponent from '../../CommonComponent/ConfirmComponent';
+import { deleteEmployeeApi, useEmployeeQuery } from '../../Hooks/EmployeeHooks';
+import { useQueryClient } from 'react-query';
+import { DialogModel } from '../../Models/CommonModel';
+import { useGetDataByKey, useSetDataByKey } from '../../Hooks/CommonHooks';
 
 
-const EmployeeList = (props: any) => {  
+const EmployeeList = (props: any) => {
 
     const [columns, setColumns] = useState<any[]>([]);
-    const [openEmployeePopup, setOpenEmployeePopup] = useState(false);
+    //const [openEmployeePopup, setOpenEmployeePopup] = useState(false);
     const [confirmPopup, setConfirmPopup] = useState(false);
-    const [dialogData, setDialogData] = useState({});
+    const [employeePopupState, setEmployeePopupState] = useState(false);
+    const [dialogModel] = useState<DialogModel>(new DialogModel);
 
     const navigate = useNavigate();
-    const { isLoading, error, data: employeeList, refetch: fetchEmployeeList } = useQuery("employee", getEmployeeList);
+    const { isLoading, isError, data: employeeList } = useEmployeeQuery();
+    const queryClient = useQueryClient();
 
-    const { mutate: deleteEmployeeMutate, isLoading: deleteLoading, error: errorDelete } = useMutation(deleteEmployee, {
+
+    const { mutate: deleteEmployeeMutation, isLoading: deleteLoading, error: errorDelete } = useMutation(deleteEmployeeApi, {
         onSuccess: () => {
             setConfirmPopup(false);
-            fetchEmployeeList();
+            queryClient.invalidateQueries("employee");
         },
         onError: (error) => {
             //toast.error(`something wrong`);
@@ -54,51 +61,56 @@ const EmployeeList = (props: any) => {
     }
 
     const handleDelete = (row: any) => {
-        let message = 'Are you sure?';
-        setDialogData({
-            // width: '30vh',
-            // height: '10vh',
-            title: 'confirmation',
-            component: <ConfirmComponent id={row?.Id} message={message} confirmDailogClose={confirmDailogClose}></ConfirmComponent>
-        });
+        //let message = 'Are you sure?';
+        // setDialogData({
+        //     // width: '30vh',
+        //     // height: '10vh',
+        //     title: 'confirmation',
+        //     component: <ConfirmComponent id={row?.Id} message={message} confirmDailogClose={confirmDailogClose}></ConfirmComponent>
+        // });
+        queryClient.setQueryData("EmployeeForm", row);
+        dialogModel.Title = 'Are you sure?';
+        dialogModel.Component = <ConfirmComponent confirmDailogClose={confirmDailogClose}></ConfirmComponent>;
+        queryClient.setQueryData("DialogModel", dialogModel);
+
         setConfirmPopup(true);
     }
 
-    const confirmDailogClose = (id: any, resp: any) => {
-        if (resp) {
-            deleteEmployeeMutate(id);
+    const confirmDailogClose = (state: boolean) => {
+        debugger;
+        let employeeForm = queryClient.getQueryData("EmployeeForm") as any;
+        if (state) {
+            deleteEmployeeMutation(employeeForm?.Id);
         }
         else {
             setConfirmPopup(false);
         }
     }
 
-    const handleRowSelection = (state: any) => {
-        console.log('Selected Rows: ', state.selectedRows);
-    }
+    // const handleRowSelection = (state: any) => {
+    //     console.log('Selected Rows: ', state.selectedRows);
+    // }
 
-    const handleRowClicked = (row: any) => {
-        //navigate(`/employee/${row.Id}`);
-        //navigate(`/employee/${row.id}`);
-    };
+    // const handleRowClicked = (row: any) => {
+    //     //navigate(`/employee/${row.Id}`);
+    //     //navigate(`/employee/${row.id}`);
+    // };
 
     const handleEdit = (row: any) => {
-        attachDialogData(row);
+        OpenEmployeePopup(row);
     }
 
-    const attachDialogData = (row: any) => {
-        setDialogData({
-            row: row,
-            title: row?.Id == null ? 'Add Employee' : "Edit Employee",
-            component: <EmployeeForm data={row} handleDialogClose={handleDialogClose}></EmployeeForm>
-        });
-        setOpenEmployeePopup(true);
+    const OpenEmployeePopup = (row: any) => {       
+        dialogModel.Title = row?.Id == null ? 'Add Employee' : "Edit Employee";
+        dialogModel.Component = <EmployeeForm handleDialogClose={handleDialogClose}></EmployeeForm>;
+        queryClient.setQueryData("EmployeeForm", row);
+        queryClient.setQueryData("DialogModel", dialogModel);
+        setEmployeePopupState(true);
     }
 
     const handleDialogClose = (resp: any) => {
-        setOpenEmployeePopup(resp);
-        setConfirmPopup(resp);
-        fetchEmployeeList();
+        setEmployeePopupState(false);
+        queryClient.invalidateQueries("employee");
     };
 
     const goToEmployeeServer = () => {
@@ -109,7 +121,7 @@ const EmployeeList = (props: any) => {
         <div>
 
             <div className='sub-header pl-16'>
-                <span onClick={() => attachDialogData(null)}><People></People>  Add Employee</span>
+                <span onClick={() => OpenEmployeePopup(null)}><People></People>  Add Employee</span>
             </div>
 
             <div className='pt-36'>
@@ -124,8 +136,8 @@ const EmployeeList = (props: any) => {
                     persistTableHead
                     selectableRows // add for checkbox selection
                     selectableRowsHighlight
-                    onSelectedRowsChange={handleRowSelection}
-                    onRowClicked={handleRowClicked}
+                //onSelectedRowsChange={handleRowSelection}
+                //onRowClicked={handleRowClicked}
                 />
             </div>
 
@@ -133,13 +145,26 @@ const EmployeeList = (props: any) => {
                 <span onClick={() => goToEmployeeServer()}><People></People> Employee Server</span>
             </div>
 
-            {openEmployeePopup ? (
+            {/* {openEmployeePopup ? (
                 <DialogComponent data={dialogData} handleDialogClose={handleDialogClose}>
+                    <EmployeeForm></EmployeeForm>
                 </DialogComponent>
             ) : null}
 
             {confirmPopup ? (
                 <DialogComponent data={dialogData} handleDialogClose={handleDialogClose}>
+                </DialogComponent>
+            ) : null} */}
+
+            {employeePopupState ? (
+                <>
+                    <DialogComponent handleDialogClose={handleDialogClose}>
+                    </DialogComponent>
+                </>
+            ) : null}
+
+            {confirmPopup ? (
+                <DialogComponent>
                 </DialogComponent>
             ) : null}
 

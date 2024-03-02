@@ -9,23 +9,27 @@ import { Save } from '@material-ui/icons';
 import PropTypes from "prop-types";
 import { useDispatch, useSelector } from 'react-redux';
 import { useMutation } from 'react-query';
-import { saveEmployeeApi } from '../../Services/EmployeeService';
 import { GlobalVariable } from '../../Constant/GlobalVariable';
 import TextboxComponent from '../../Controls/TextboxComponent';
 import NumberComponent from '../../Controls/NumberComponent';
+import { saveEmployeeApi } from '../../Hooks/EmployeeHooks';
+import { useQueryClient } from 'react-query';
 
 const EmployeeForm = (props: any) => {
 
-    const [row] = useState<any>(props?.data);
+    //const [row] = useState<any>(props?.data);
+    const queryClient = useQueryClient();
+    const row = queryClient.getQueryData("EmployeeForm") as any;
     const dispatch = useDispatch();
     const [employeeTypeList, setEmployeeTypeList] = useState<any[]>([]);
 
-    const { mutate: saveEmployeeMutate, isLoading, isError, error } = useMutation(saveEmployeeApi, {
+
+    const { mutate: saveEmployeeMutation, isLoading, isError, error } = useMutation(saveEmployeeApi, {
         onSuccess: () => {
             props.handleDialogClose(false);
         },
         onError: (error) => {
-            //toast.error(`something wrong`);
+            props.handleDialogClose(false);
         }
     })
 
@@ -51,6 +55,7 @@ const EmployeeForm = (props: any) => {
             address1: row ? row.Address1 : "",
             address2: row ? row.Address2 : "",
             employeetype: row ? row.EmployeeType : "",
+            email: row ? row.Email : "",
         }
     };
 
@@ -88,9 +93,11 @@ const EmployeeForm = (props: any) => {
                 Address2: formik.values.address2,
                 EmployeeTypeId: formik.values.employeetype,
                 EmployeeTypeText: employeeTypeList?.find(x => x.Value == formik.values?.employeetype)?.Text,
+                Email: formik.values.email,
             };
 
-            saveEmployeeMutate(formData);
+            //saveEmployeeMutate(formData);
+            saveEmployeeMutation(formData);
         }
     }
 
@@ -139,6 +146,10 @@ const EmployeeForm = (props: any) => {
                             onChange={formik.handleChange} error={formik.touched.address2 && Boolean(formik.errors.address2)}
                             helperText={formik.touched.address2 && Boolean(formik.errors.address2)}
                         ></TextField>
+                    </Grid>
+                    <Grid item xs={6}>
+                    <TextboxComponent name="email" label="Email" value={formik.values.email}
+                            formik={formik}></TextboxComponent>
                     </Grid>
 
                     <Grid item xs={7}></Grid>
